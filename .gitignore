@@ -1,1 +1,28 @@
+# Node.js dependencies
 node_modules
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Uploaded files (runtime data)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build / cache
+dist/
+build/
+.cache/
