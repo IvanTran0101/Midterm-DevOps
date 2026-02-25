@@ -19,6 +19,11 @@ async function uploadToS3(file) {
   return key;
 }
 
+function s3PublicUrl(key) {
+  // Basic public S3 URL (works if the object is publicly readable or served via bucket policy/CloudFront)
+  return `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+}
+
 function saveLocal(file) {
   const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
   if (!fs.existsSync(uploadDir)) {
@@ -56,7 +61,7 @@ async function create(req, res, next) {
     if (file) {
       if (process.env.S3_BUCKET && process.env.AWS_REGION) {
         const key = await uploadToS3(file);
-        payload.imageUrl = key;
+        payload.imageUrl = s3PublicUrl(key);
       } else {
         payload.imageUrl = saveLocal(file);
       }
@@ -73,7 +78,7 @@ async function put(req, res, next) {
     if (file) {
       if (process.env.S3_BUCKET && process.env.AWS_REGION) {
         const key = await uploadToS3(file);
-        payload.imageUrl = key;
+        payload.imageUrl = s3PublicUrl(key);
       } else {
         payload.imageUrl = saveLocal(file);
       }
@@ -92,7 +97,7 @@ async function patch(req, res, next) {
     if (file) {
       if (process.env.S3_BUCKET && process.env.AWS_REGION) {
         const key = await uploadToS3(file);
-        payload.imageUrl = key;
+        payload.imageUrl = s3PublicUrl(key);
       } else {
         payload.imageUrl = saveLocal(file);
       }
