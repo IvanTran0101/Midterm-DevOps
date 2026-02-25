@@ -9,13 +9,29 @@ const s3 = new S3Client({
 });
 
 async function uploadToS3(file) {
-  const key = `products/${Date.now()}-${file.originalname}`;
+  // Ensure we actually have bytes in memory (multer.memoryStorage should populate file.buffer)
+  const buf = file && file.buffer
+    ? (Buffer.isBuffer(file.buffer) ? file.buffer : Buffer.from(file.buffer))
+    : null;
+
+  if (!buf || buf.length === 0) {
+    // Fail fast: uploading empty objects is what causes 0-byte images + render issues
+    throw new Error('Upload failed: file.buffer is empty. Ensure multer.memoryStorage() is used and the form field name matches upload.single(...).');
+  }
+
+  const safeName = (file.originalname || 'file')
+    .replace(/[^a-zA-Z0-9.\-_]/g, '_');
+
+  const key = `products/${Date.now()}-${safeName}`;
+
   await s3.send(new PutObjectCommand({
     Bucket: process.env.S3_BUCKET,
     Key: key,
-    Body: file.buffer,
-    ContentType: file.mimetype
+    Body: buf,
+    ContentType: file.mimetype,
+    ContentLength: buf.length
   }));
+
   return key;
 }
 
@@ -29,9 +45,10 @@ function saveLocal(file) {
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
-  const filename = Date.now() + '-' + file.originalname;
+  const filename = Date.now() + '-' + (file.originalname || 'file').replace(/[^a-zA-Z0-9.\-_]/g, '_');
   const fullPath = path.join(uploadDir, filename);
-  fs.writeFileSync(fullPath, file.buffer);
+  const buf = Buffer.isBuffer(file.buffer) ? file.buffer : Buffer.from(file.buffer);
+  fs.writeFileSync(fullPath, buf);
   return `/uploads/${filename}`;
 }
 
