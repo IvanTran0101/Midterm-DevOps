@@ -104,7 +104,9 @@ async function patch(req, res, next) {
   try {
     const file = req.file;
     const payload = {};
-    ['name','price','color','description'].forEach(k => { if (k in req.body) payload[k] = req.body[k]; });
+    ['name', 'price', 'color', 'description'].forEach((k) => {
+      if (k in req.body) payload[k] = req.body[k];
+    });
 
     if (file) {
       if (process.env.S3_BUCKET && process.env.AWS_REGION) {
