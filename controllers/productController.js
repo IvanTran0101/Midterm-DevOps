@@ -13,7 +13,7 @@ async function uploadToS3(file) {
     throw new Error('Upload failed: file.buffer is empty.');
   }
 
-  const safeName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const safeName = (file.originalname || 'file').replace(/[^a-zA-Z0-9.\-_]/g, '_');
   const key = `products/${Date.now()}-${safeName}`;
 
   await s3.send(new PutObjectCommand({
@@ -36,7 +36,7 @@ function saveLocal(file) {
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
-  const filename = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const filename = Date.now() + '-' + (file.originalname || 'file').replace(/[^a-zA-Z0-9.\-_]/g, '_');
   const fullPath = path.join(uploadDir, filename);
   fs.writeFileSync(fullPath, file.buffer);
   return `/uploads/${filename}`;
