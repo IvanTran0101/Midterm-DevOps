@@ -6,7 +6,7 @@ services:
       - mongo_data:/data/db
 
   web:
-    image: youngmizh/midterm-devops:1.0.0
+    image: youngmizh/midterm-devops:1.0.1
     restart: always
     depends_on:
       - mongodb
@@ -16,7 +16,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - uploads_data:public/uploads
+      - uploads_data:/app/public/uploads
 
 volumes:
   mongo_data:
