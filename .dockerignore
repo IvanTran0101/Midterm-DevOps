@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+Dockerfile
+docker-compose*.yml
+.env
+.git
+.gitignore
+docs
+phase1
+phase2
+phase3

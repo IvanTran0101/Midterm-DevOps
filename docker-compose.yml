@@ -1,0 +1,23 @@
+services:
+  mongodb:
+    image: mongo:6.0
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+
+  web:
+    image: youngmizh/midterm-devops:1.0.0
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/appdb
+      MONGODB_URI: mongodb://mongodb:27017/appdb
+    ports:
+      - "3000:3000"
+    volumes:
+      - uploads_data:/app/uploads
+
+volumes:
+  mongo_data:
+  uploads_data:

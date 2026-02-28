@@ -1,5 +1,46 @@
 const os = require('os');
 const dataSource = require('../services/dataSource');
+const fs = require('fs');
+const path = require('path');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION
+});
+
+async function uploadToS3(file) {
+  if (!file || !file.buffer || file.buffer.length === 0) {
+    throw new Error('Upload failed: file.buffer is empty.');
+  }
+
+  const safeName = (file.originalname || 'file').replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const key = `products/${Date.now()}-${safeName}`;
+
+  await s3.send(new PutObjectCommand({
+    Bucket: process.env.S3_BUCKET,
+    Key: key,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+    ContentLength: file.buffer.length
+  }));
+
+  return key;
+}
+
+function s3PublicUrl(key) {
+  return `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+}
+
+function saveLocal(file) {
+  const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+  const filename = Date.now() + '-' + (file.originalname || 'file').replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const fullPath = path.join(uploadDir, filename);
+  fs.writeFileSync(fullPath, file.buffer);
+  return `/uploads/${filename}`;
+}
 
 function meta() {
   return { hostname: os.hostname(), source: dataSource.isMongo ? 'mongodb' : 'in-memory' };
@@ -24,7 +65,16 @@ async function create(req, res, next) {
   try {
     const file = req.file;
     const payload = (({ name, price, color, description }) => ({ name, price, color, description }))(req.body);
-    if (file) payload.imageUrl = `/uploads/${file.filename}`;
+
+    if (file) {
+      if (process.env.S3_BUCKET && process.env.AWS_REGION) {
+        const key = await uploadToS3(file);
+        payload.imageUrl = s3PublicUrl(key);
+      } else {
+        payload.imageUrl = saveLocal(file);
+      }
+    }
+
     const item = await dataSource.create(payload);
     res.status(201).json({ data: item, ...meta() });
   } catch (err) { next(err); }
@@ -34,7 +84,16 @@ async function put(req, res, next) {
   try {
     const file = req.file;
     const payload = (({ name, price, color, description }) => ({ name, price, color, description }))(req.body);
-    if (file) payload.imageUrl = `/uploads/${file.filename}`;
+
+    if (file) {
+      if (process.env.S3_BUCKET && process.env.AWS_REGION) {
+        const key = await uploadToS3(file);
+        payload.imageUrl = s3PublicUrl(key);
+      } else {
+        payload.imageUrl = saveLocal(file);
+      }
+    }
+
     const item = await dataSource.replace(req.params.id, payload);
     if (!item) return res.status(404).json({ message: 'Not found', ...meta() });
     res.json({ data: item, ...meta() });
@@ -45,8 +104,19 @@ async function patch(req, res, next) {
   try {
     const file = req.file;
     const payload = {};
-    ['name','price','color','description'].forEach(k => { if (k in req.body) payload[k] = req.body[k]; });
-    if (file) payload.imageUrl = `/uploads/${file.filename}`;
+    ['name', 'price', 'color', 'description'].forEach((k) => {
+      if (k in req.body) payload[k] = req.body[k];
+    });
+
+    if (file) {
+      if (process.env.S3_BUCKET && process.env.AWS_REGION) {
+        const key = await uploadToS3(file);
+        payload.imageUrl = s3PublicUrl(key);
+      } else {
+        payload.imageUrl = saveLocal(file);
+      }
+    }
+
     const item = await dataSource.patch(req.params.id, payload);
     if (!item) return res.status(404).json({ message: 'Not found', ...meta() });
     res.json({ data: item, ...meta() });
