@@ -47,7 +47,7 @@ echo "==> Done."
 echo "Nginx status (first lines):"
 sudo systemctl --no-pager --full status nginx | sed -n '1,12p' || true
 
-ENV_TEMPLATE="${ENV_TEMPLATE:-./env/.env.template}"  # tuỳ bạn set đường dẫn khi chạy script
+ENV_TEMPLATE="${ENV_TEMPLATE:-../config/env/.env.template}" # tuỳ bạn set đường dẫn khi chạy script
 
 echo "==> Create .env from template (if missing)..."
 if [[ -f "${ENV_TEMPLATE}" ]]; then
