@@ -2,9 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const os = require('os');
-const productRoutes = require('./src/routes/productRoutes');
-const dataSource = require('./src/services/dataSource');
-const uiRoutes = require('./src/routes/uiRoutes');
+const productRoutes = require('./routes/productRoutes');
+const dataSource = require('./services/dataSource');
+const uiRoutes = require('./routes/uiRoutes');
 const path = require("path");
 const fs = require('fs'); 
 
