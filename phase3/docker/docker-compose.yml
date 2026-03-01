@@ -1,0 +1,28 @@
+services:
+  mongodb:
+    image: mongo:6.0
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+
+  web:
+    image: youngmizh/midterm-devops:1.0.1
+    restart: always
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    environment:
+      # Keep these as defaults; .env can override if needed
+      MONGO_URI: mongodb://mongodb:27017/appdb
+      MONGODB_URI: mongodb://mongodb:27017/appdb
+      PORT: "3000"
+    # Bind only to localhost so only host Nginx can reach it
+    ports:
+      - "127.0.0.1:8080:3000"
+    volumes:
+      - uploads_data:/app/public/uploads
+
+volumes:
+  mongo_data:
+  uploads_data:
