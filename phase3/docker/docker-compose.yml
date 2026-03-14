@@ -10,11 +10,16 @@ services:
     restart: always
     depends_on:
       - mongodb
+    env_file:
+      - .env
     environment:
+      # Keep these as defaults; .env can override if needed
       MONGO_URI: mongodb://mongodb:27017/appdb
       MONGODB_URI: mongodb://mongodb:27017/appdb
+      PORT: "3000"
+    # Bind only to localhost so only host Nginx can reach it
     ports:
-      - "3000:3000"
+      - "127.0.0.1:8080:3000"
     volumes:
       - uploads_data:/app/public/uploads
 

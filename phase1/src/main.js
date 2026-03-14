@@ -5,7 +5,7 @@ const os = require('os');
 const productRoutes = require('./routes/productRoutes');
 const dataSource = require('./services/dataSource');
 const uiRoutes = require('./routes/uiRoutes');
-const path = require('path');
+const path = require("path");
 const fs = require('fs'); 
 
 const app = express();
@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // view engine and static
-app.set('views', path.join(__dirname, 'views'));
+app.set("views", path.join(__dirname, "views"));
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 

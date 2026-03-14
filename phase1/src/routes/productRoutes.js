@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/productController');
-const validators = require('../validators/productValidator');
+const controller = require('../../controllers/productController');
+const validators = require('../../validators/productValidator');
 const { validationResult } = require('express-validator');
 const multer = require('multer');
 // Use memory storage so req.file.buffer is available for S3 upload
